@@ -1,6 +1,3 @@
-Here is a clean, fully copy-paste ready **README.md** file.
-
-You can paste this directly into `README.md`.
 
 ---
 

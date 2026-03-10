@@ -2,6 +2,7 @@
 
 const { installHusky } = require('../lib/husky');
 const { installGitleaks } = require('../lib/gitleaks');
+const { installSonarScanner, setupSonarProperties } = require('../lib/sonarqube');
 const { setupPreCommitHook } = require('../lib/hooks');
 const { isGitRepo } = require('../lib/git');
 const { logInfo, logError, logSuccess } = require('../lib/logger');
@@ -23,9 +24,12 @@ const command = process.argv[2];
 
     await installHusky();
     await installGitleaks();
+    await installSonarScanner();
+    await setupSonarProperties();
     await setupPreCommitHook();
 
-    logSuccess("Secure Husky + Gitleaks setup completed.");
+    logSuccess("Secure Husky + Gitleaks + SonarQube setup completed.");
+    logInfo("Next step: edit sonar-project.properties and set sonar.host.url and sonar.token.");
   } catch (err) {
     logError(err.message);
     process.exit(1);

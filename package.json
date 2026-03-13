@@ -1,6 +1,6 @@
 {
   "name": "secure-husky-setup",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Automatic Husky + Gitleaks setup for any JS project",
   "main": "bin/index.js",
   "bin": {

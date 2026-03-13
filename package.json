@@ -25,7 +25,5 @@
     "fs-extra": "^11.3.3",
     "sonarqube-scanner": "^4.0.0"
   },
-  "scripts": {
-    "postinstall": "node bin/index.js init"
-  }
+  "scripts": {}
 }

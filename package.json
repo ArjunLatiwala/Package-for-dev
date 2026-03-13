@@ -4,7 +4,7 @@
   "description": "Automatic Husky + Gitleaks setup for any JS project",
   "main": "bin/index.js",
   "bin": {
-    "secure-husky-setup": "./bin/index.js"
+    "secure-husky-setup": "bin/index.js"
   },
   "keywords": [
     "husky",
@@ -14,7 +14,11 @@
   ],
   "author": "Your Name",
   "license": "MIT",
-  "files": ["bin", "lib", "templates"],
+  "files": [
+    "bin",
+    "lib",
+    "templates"
+  ],
   "dependencies": {
     "chalk": "^4.1.2",
     "execa": "^5.1.1",

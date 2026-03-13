@@ -3,7 +3,6 @@ const { installHusky } = require('../lib/husky');
 const { installGitleaks } = require('../lib/gitleaks');
 const { installSonarScanner, setupSonarProperties } = require('../lib/sonarqube');
 const { setupPreCommitHook } = require('../lib/hooks');
-// Added by Arjun — import CI setup functions from the new lib/ci.js module
 const { setupPrePushHook, setupCIScript, setupCIWorkflow, validateProject, ensurePackageLock } = require('../lib/ci');
 const { isGitRepo } = require('../lib/git');
 const { logInfo, logError, logSuccess } = require('../lib/logger');
@@ -19,41 +18,38 @@ const command = process.argv[2];
   try {
     logInfo("Initializing secure git hooks...");
 
-    if (!await isGitRepo()) {
-      throw new Error("Not inside a git repository.");
+    const { found, gitRoot, projectRoot } = await isGitRepo();
+
+    if (!found) {
+      throw new Error("Not inside a git repository. Please run 'git init' first.");
     }
 
-    // ── Existing steps — pre-commit hooks (no changes made here) ─────────────
-    await installHusky();
+    if (gitRoot !== projectRoot) {
+      logInfo(`Git root detected at: ${gitRoot}`);
+      logInfo(`Project root (package.json): ${projectRoot}`);
+      logInfo(`Monorepo/subfolder setup detected — hooks installed at git root, config at project root.`);
+    }
+
+    // ── Pre-commit hooks ──────────────────────────────────────────────────────
+    await installHusky(gitRoot);
     await installGitleaks();
     await installSonarScanner();
     await setupSonarProperties();
-    await setupPreCommitHook();
+    await setupPreCommitHook(gitRoot);
 
     logSuccess("Secure Husky + Gitleaks + SonarQube setup completed.");
     logInfo("Next step: edit sonar-project.properties and set sonar.host.url and sonar.token.");
 
-    // Added by Arjun — pre-push hook + GitHub Actions CI workflow setup ───────
-    // Runs Newman API tests and smoke tests automatically on every git push
+    // ── Pre-push hook + GitHub Actions CI workflow ────────────────────────────
     logInfo("Setting up Newman & Smoke Test CI workflow...");
 
-    // Added by Arjun — ensure package-lock.json exists (required by npm ci in workflow)
     await ensurePackageLock();
-
-    // Added by Arjun — validate package.json has "start" and "test" scripts
     await validateProject();
-
-    // Added by Arjun — write standalone scripts/run-ci-checks.sh (all test logic lives here)
-    await setupCIScript();
-
-    // Added by Arjun — copy ci-tests.yml into .github/workflows/
+    await setupCIScript(gitRoot);
     await setupCIWorkflow();
-
-    // Added by Arjun — create .husky/pre-push hook (thin wrapper that calls run-ci-checks.sh)
-    await setupPrePushHook();
+    await setupPrePushHook(gitRoot);
 
     logSuccess("Newman + Smoke Test pre-push hook and GitHub Actions workflow setup completed.");
-    // ── End of Arjun's additions ──────────────────────────────────────────────
 
   } catch (err) {
     logError(err.message);
